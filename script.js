@@ -228,7 +228,7 @@
 
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "Fahrer suchen...";
+    input.placeholder = window.matchMedia("(max-width: 640px)").matches ? "Suchen..." : "Fahrer suchen...";
     input.autocomplete = "off";
 
     const errorMsg = document.createElement("div");

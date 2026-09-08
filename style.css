@@ -97,6 +97,7 @@ button#new-game:active {
 table.grid {
   border-collapse: separate;
   border-spacing: 6px;
+  table-layout: fixed;
 }
 
 table.grid th {
@@ -107,10 +108,14 @@ table.grid th {
   background: var(--panel-2);
   border-radius: var(--radius);
   text-align: center;
-  max-width: 130px;
+  width: 150px;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 table.grid th.corner {
+  width: 120px;
   background: transparent;
 }
 
@@ -250,13 +255,20 @@ footer {
 }
 
 @media (max-width: 640px) {
+  table.grid {
+    border-spacing: 4px;
+  }
   table.grid th {
     font-size: 0.62rem;
-    padding: 6px 4px;
+    padding: 6px 3px;
+    width: 82px;
+  }
+  table.grid th.corner {
+    width: 82px;
   }
   td.cell {
-    width: 96px;
-    height: 96px;
+    width: 82px;
+    height: 92px;
   }
   .cell-filled img,
   .cell-filled .avatar-fallback {
@@ -266,5 +278,10 @@ footer {
   }
   .cell-filled .driver-name {
     font-size: 0.62rem;
+  }
+  .cell-inner input {
+    font-size: 0.72rem;
+    padding: 5px 4px;
+    width: 94%;
   }
 }
