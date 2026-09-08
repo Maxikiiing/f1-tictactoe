@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' data:; script-src 'self';" />
+  <title>F1-Fahrer Tic-Tac-Toe</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>F1-Fahrer <span>Tic-Tac-Toe</span></h1>
+    <p>Fuelle jede Zelle mit einem Fahrer, der Zeilen- UND Spalten-Anforderung erfuellt.</p>
+  </header>
+
+  <div class="toolbar">
+    <button id="new-game">Neues Spiel</button>
+    <span id="progress">0 von 9 ausgefuellt</span>
+  </div>
+
+  <div id="status-message"></div>
+
+  <div class="grid-wrapper">
+    <table class="grid">
+      <thead>
+        <tr id="col-headers"></tr>
+      </thead>
+      <tbody id="grid-body"></tbody>
+    </table>
+  </div>
+
+  <footer>F1-Fahrer Tic-Tac-Toe &middot; rein clientseitig, keine Daten verlassen den Browser</footer>
+
+  <script src="requirementTypes.js?v=3"></script>
+  <script src="script.js?v=3"></script>
+</body>
+</html>

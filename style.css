@@ -1,0 +1,270 @@
+:root {
+  --bg: #0e1116;
+  --panel: #171b22;
+  --panel-2: #1f2530;
+  --border: #2a303c;
+  --text: #e8eaed;
+  --muted: #9aa4b2;
+  --accent: #e10600; /* F1 red */
+  --good: #1fbf75;
+  --bad: #ef4444;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at top, #1a1f28, var(--bg) 60%);
+  color: var(--text);
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 12px 60px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  margin: 0 0 4px;
+  font-size: 1.8rem;
+  letter-spacing: 0.5px;
+}
+
+header h1 span {
+  color: var(--accent);
+}
+
+header p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+button#new-game {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: transform 0.1s ease, filter 0.15s ease;
+}
+
+button#new-game:hover {
+  filter: brightness(1.1);
+}
+
+button#new-game:active {
+  transform: scale(0.97);
+}
+
+#progress {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+#status-message {
+  min-height: 1.4em;
+  font-weight: 600;
+  color: var(--good);
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.grid-wrapper {
+  display: inline-block;
+}
+
+table.grid {
+  border-collapse: separate;
+  border-spacing: 6px;
+}
+
+table.grid th {
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 10px 8px;
+  background: var(--panel-2);
+  border-radius: var(--radius);
+  text-align: center;
+  max-width: 130px;
+}
+
+table.grid th.corner {
+  background: transparent;
+}
+
+td.cell {
+  width: 150px;
+  height: 110px;
+  padding: 0;
+  vertical-align: top;
+}
+
+.cell-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  position: relative;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.cell-inner.correct {
+  border-color: var(--good);
+  background: rgba(31, 191, 117, 0.12);
+}
+
+.cell-inner.shake {
+  border-color: var(--bad);
+  animation: shake 0.35s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.cell-inner input {
+  width: 92%;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.cell-inner input:focus {
+  border-color: var(--accent);
+}
+
+.cell-filled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  padding: 4px;
+}
+
+.cell-filled img,
+.cell-filled .avatar-fallback {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--panel-2);
+  border: 2px solid var(--good);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.cell-filled .driver-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: 100%;
+  left: 4%;
+  width: 92%;
+  max-height: 180px;
+  overflow-y: auto;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 20;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.autocomplete-list div {
+  padding: 7px 10px;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.autocomplete-list div:hover,
+.autocomplete-list div.active {
+  background: var(--accent);
+  color: white;
+}
+
+.autocomplete-list .no-match {
+  color: var(--muted);
+  cursor: default;
+}
+
+.autocomplete-list .no-match:hover {
+  background: transparent;
+  color: var(--muted);
+}
+
+.error-msg {
+  color: var(--bad);
+  font-size: 0.68rem;
+  margin-top: 2px;
+  min-height: 1em;
+}
+
+footer {
+  margin-top: 30px;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  table.grid th {
+    font-size: 0.62rem;
+    padding: 6px 4px;
+  }
+  td.cell {
+    width: 96px;
+    height: 96px;
+  }
+  .cell-filled img,
+  .cell-filled .avatar-fallback {
+    width: 34px;
+    height: 34px;
+    font-size: 0.75rem;
+  }
+  .cell-filled .driver-name {
+    font-size: 0.62rem;
+  }
+}
