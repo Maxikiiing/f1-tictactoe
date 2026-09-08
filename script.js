@@ -13,6 +13,8 @@
   let cellAnswers = new Array(9).fill(null);
   /** Set der bereits verwendeten Fahrer-IDs */
   let usedDriverIds = new Set();
+  /** true, sobald der Spieler aufgegeben hat (Grid ist dann gesperrt) */
+  let gaveUp = false;
 
   const gridBody = document.getElementById("grid-body");
   const colHeadRow = document.getElementById("col-headers");
@@ -20,6 +22,7 @@
   const progressEl = document.getElementById("progress");
   const statusEl = document.getElementById("status-message");
   const newGameBtn = document.getElementById("new-game");
+  const giveUpBtn = document.getElementById("give-up");
 
   function formatLabel(type, value) {
     return type.labelTemplate.replace("{value}", String(value));
@@ -221,6 +224,122 @@
     }
   }
 
+  function buildAvatarFallback(name) {
+    const div = document.createElement("div");
+    div.className = "avatar-fallback";
+    const initials = name
+      .split(" ")
+      .map((p) => p[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+    div.textContent = initials;
+    return div;
+  }
+
+  // statusClass: "correct" (vom Spieler richtig eingetragen) oder "revealed"
+  // (beim Aufgeben angezeigte Loesung).
+  function renderFilledCell(wrapper, driver, statusClass) {
+    wrapper.classList.add(statusClass);
+    wrapper.innerHTML = "";
+    const filled = document.createElement("div");
+    filled.className = "cell-filled";
+
+    if (driver.image) {
+      const img = document.createElement("img");
+      img.src = driver.image;
+      img.alt = driver.name;
+      img.onerror = () => {
+        img.remove();
+        filled.prepend(buildAvatarFallback(driver.name));
+      };
+      filled.appendChild(img);
+    } else {
+      filled.appendChild(buildAvatarFallback(driver.name));
+    }
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "driver-name";
+    nameEl.textContent = driver.name;
+    filled.appendChild(nameEl);
+
+    wrapper.appendChild(filled);
+  }
+
+  // Kuhn's Algorithmus, beschraenkt auf die noch offenen Zellen und auf Fahrer,
+  // die noch nicht in einer anderen Zelle verwendet wurden. Liefert cellIndex ->
+  // Fahrer fuer eine gueltige Loesung der restlichen Zellen.
+  function solveRemainingCells(emptyCellIndices) {
+    const candidateLists = emptyCellIndices.map((cellIndex) => {
+      const rowReq = rowRequirements[Math.floor(cellIndex / 3)];
+      const colReq = colRequirements[cellIndex % 3];
+      return drivers.filter(
+        (d) => !usedDriverIds.has(d.id) && rowReq.check(d) && colReq.check(d)
+      );
+    });
+
+    const matchForDriver = new Map(); // driver -> lokaler Index in emptyCellIndices
+    function tryAssign(localIndex, visited) {
+      for (const driver of candidateLists[localIndex]) {
+        if (visited.has(driver)) continue;
+        visited.add(driver);
+        const currentOwner = matchForDriver.get(driver);
+        if (currentOwner === undefined || tryAssign(currentOwner, visited)) {
+          matchForDriver.set(driver, localIndex);
+          return true;
+        }
+      }
+      return false;
+    }
+
+    for (let localIndex = 0; localIndex < emptyCellIndices.length; localIndex++) {
+      tryAssign(localIndex, new Set());
+    }
+
+    const localAssignment = new Array(emptyCellIndices.length).fill(null);
+    matchForDriver.forEach((localIndex, driver) => {
+      localAssignment[localIndex] = driver;
+    });
+
+    // Falls (in seltenen Faellen) kein vollstaendiges Matching moeglich ist, weil
+    // bereits vom Spieler verwendete Fahrer fehlen: fuelle verbleibende Zellen mit
+    // dem erstbesten Kandidaten auf (Best-Effort statt gar keine Loesung zu zeigen).
+    const usedInFallback = new Set();
+    for (let i = 0; i < localAssignment.length; i++) {
+      if (localAssignment[i]) {
+        usedInFallback.add(localAssignment[i].id);
+        continue;
+      }
+      const fallback =
+        candidateLists[i].find((d) => !usedInFallback.has(d.id)) || candidateLists[i][0] || null;
+      localAssignment[i] = fallback;
+      if (fallback) usedInFallback.add(fallback.id);
+    }
+
+    const solution = new Map(); // cellIndex -> Fahrer
+    emptyCellIndices.forEach((cellIndex, i) => solution.set(cellIndex, localAssignment[i]));
+    return solution;
+  }
+
+  function giveUp() {
+    if (gaveUp) return;
+    gaveUp = true;
+    giveUpBtn.disabled = true;
+
+    const emptyCellIndices = [];
+    for (let i = 0; i < 9; i++) if (cellAnswers[i] === null) emptyCellIndices.push(i);
+
+    const solution = solveRemainingCells(emptyCellIndices);
+    emptyCellIndices.forEach((cellIndex) => {
+      const driver = solution.get(cellIndex);
+      if (!driver) return;
+      const wrapper = gridBody.querySelector(`.cell-inner[data-cell-index="${cellIndex}"]`);
+      if (wrapper) renderFilledCell(wrapper, driver, "revealed");
+    });
+
+    updateProgress();
+  }
+
   function buildCell(cellIndex) {
     const wrapper = document.createElement("div");
     wrapper.className = "cell-inner";
@@ -305,49 +424,9 @@
 
       cellAnswers[cellIndex] = driver.id;
       usedDriverIds.add(driver.id);
-      renderFilledCell(driver);
+      renderFilledCell(wrapper, driver, "correct");
       closeList();
       updateProgress();
-    }
-
-    function renderFilledCell(driver) {
-      wrapper.classList.add("correct");
-      wrapper.innerHTML = "";
-      const filled = document.createElement("div");
-      filled.className = "cell-filled";
-
-      if (driver.image) {
-        const img = document.createElement("img");
-        img.src = driver.image;
-        img.alt = driver.name;
-        img.onerror = () => {
-          img.remove();
-          filled.prepend(buildAvatarFallback(driver.name));
-        };
-        filled.appendChild(img);
-      } else {
-        filled.appendChild(buildAvatarFallback(driver.name));
-      }
-
-      const nameEl = document.createElement("div");
-      nameEl.className = "driver-name";
-      nameEl.textContent = driver.name;
-      filled.appendChild(nameEl);
-
-      wrapper.appendChild(filled);
-    }
-
-    function buildAvatarFallback(name) {
-      const div = document.createElement("div");
-      div.className = "avatar-fallback";
-      const initials = name
-        .split(" ")
-        .map((p) => p[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase();
-      div.textContent = initials;
-      return div;
     }
 
     input.addEventListener("input", () => renderSuggestions(input.value));
@@ -386,16 +465,20 @@
   function updateProgress() {
     const filled = cellAnswers.filter((a) => a !== null).length;
     progressEl.textContent = `${filled} von 9 ausgefuellt`;
-    if (filled === 9) {
+    if (gaveUp) {
+      statusEl.textContent = "Aufgegeben - Loesung angezeigt.";
+    } else if (filled === 9) {
       statusEl.textContent = "Glueckwunsch, Grid komplett!";
     } else {
       statusEl.textContent = "";
     }
+    giveUpBtn.disabled = gaveUp || filled === 9;
   }
 
   function startNewGame() {
     cellAnswers = new Array(9).fill(null);
     usedDriverIds = new Set();
+    gaveUp = false;
     statusEl.textContent = "";
     const { rows, cols } = generateGrid(requirementTypes, drivers);
     rowRequirements = rows;
@@ -414,6 +497,7 @@
       return;
     }
     newGameBtn.addEventListener("click", startNewGame);
+    giveUpBtn.addEventListener("click", giveUp);
     startNewGame();
   }
 

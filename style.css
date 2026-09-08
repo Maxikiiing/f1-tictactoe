@@ -8,6 +8,7 @@
   --accent: #e10600; /* F1 red */
   --good: #1fbf75;
   --bad: #ef4444;
+  --reveal: #f5a623;
   --radius: 10px;
 }
 
@@ -77,6 +78,32 @@ button#new-game:active {
   transform: scale(0.97);
 }
 
+button#give-up {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: transform 0.1s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+button#give-up:hover:not(:disabled) {
+  border-color: var(--bad);
+  color: var(--bad);
+}
+
+button#give-up:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button#give-up:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 #progress {
   color: var(--muted);
   font-size: 0.9rem;
@@ -144,6 +171,16 @@ td.cell {
 .cell-inner.correct {
   border-color: var(--good);
   background: rgba(31, 191, 117, 0.12);
+}
+
+.cell-inner.revealed {
+  border-color: var(--reveal);
+  background: rgba(245, 166, 35, 0.1);
+}
+
+.cell-inner.revealed .avatar-fallback,
+.cell-inner.revealed img {
+  border-color: var(--reveal);
 }
 
 .cell-inner.shake {
